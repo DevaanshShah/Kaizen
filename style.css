@@ -85,3 +85,56 @@ body {
 .spline-section spline-viewer {
   transform: scale(1.2);
 }
+.hamburger {
+  display: none;
+  cursor: pointer;
+}
+.line {
+  width: 30px;
+  height: 3px;
+  background: white;
+  margin: 5px;
+}
+@media screen and (max-width: 768px) {
+  .menu {
+    display: none;
+  }
+  .btn1 {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+  .navbar {
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+  .mainarea {
+    flex-direction: column;
+    padding: 0 20px;
+  }
+  .text-section {
+    width: 100%;
+    text-align: center;
+  }
+  .spline-section {
+    width: 100%;
+    height: 50%;
+  }
+  .text1 {
+    font-size: 10vw;
+  }
+  .menu.active {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100px;
+    left: 0;
+    gap: 20px;
+    padding: 20px 0;
+    width: 100%;
+    background: black;
+    text-align: center;
+    z-index: 10;
+  }
+}
