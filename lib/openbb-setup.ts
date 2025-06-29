@@ -29,7 +29,7 @@ export class OpenBBSetup {
     // Load credentials from environment variables
     this.credentials = {
       fmp_api_key: process.env.FMP_API_KEY,
-      polygon_api_key: process.env.POLYGON_API_KEY,
+      polygon_api_key: process.env.POLYGON_API_KEY || 'M_Oc0zRLKkVWPnjBYe9dbO64g7UNnuL_',
       benzinga_api_key: process.env.BENZINGA_API_KEY,
       fred_api_key: process.env.FRED_API_KEY,
       nasdaq_api_key: process.env.NASDAQ_API_KEY,
@@ -87,7 +87,8 @@ export class OpenBBSetup {
     const providers = this.getAvailableProviders()
     
     // Priority order based on data quality and reliability
-    const priority = ['benzinga', 'fmp', 'intrinio', 'polygon', 'tiingo', 'yfinance']
+    // Polygon is now prioritized since we have a valid API key
+    const priority = ['polygon', 'benzinga', 'fmp', 'intrinio', 'tiingo', 'yfinance']
     
     for (const provider of priority) {
       if (providers.includes(provider)) {
@@ -95,7 +96,7 @@ export class OpenBBSetup {
       }
     }
     
-    return 'fmp' // Default fallback
+    return 'polygon' // Default to polygon since we have the API key
   }
 
   hasValidCredentials(): boolean {

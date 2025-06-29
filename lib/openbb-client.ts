@@ -89,8 +89,8 @@ class OpenBBNewsClient {
     sentiment?: 'positive' | 'neutral' | 'negative'
   } = {}): Promise<OpenBBNewsResponse> {
     try {
-      // Use the best available provider
-      const provider = params.provider || openbbSetup.getBestProvider()
+      // Use polygon as the preferred provider since we have the API key
+      const provider = params.provider || 'fmp' // Use fmp for world news as polygon focuses on company news
       
       return await this.makeRequest('/news/world', {
         limit: params.limit || 20,
@@ -112,8 +112,8 @@ class OpenBBNewsClient {
     provider?: 'benzinga' | 'fmp' | 'intrinio' | 'polygon' | 'tiingo' | 'yfinance'
   } = {}): Promise<OpenBBNewsResponse> {
     try {
-      // Use the best available provider
-      const provider = params.provider || openbbSetup.getBestProvider()
+      // Use polygon as the preferred provider for company news since we have the API key
+      const provider = params.provider || 'polygon'
       
       return await this.makeRequest('/news/company', {
         limit: params.limit || 20,
@@ -134,9 +134,9 @@ class OpenBBNewsClient {
         return []
       }
 
-      const provider = openbbSetup.getBestProvider()
+      // Use polygon for company news since we have the API key
       const promises = symbols.map(symbol => 
-        this.getCompanyNews({ symbol, limit: 5, provider: provider as any })
+        this.getCompanyNews({ symbol, limit: 5, provider: 'polygon' })
       )
       
       const responses = await Promise.allSettled(promises)
