@@ -1,5 +1,3 @@
-"use client"
-
 import { Twitter, Linkedin, Facebook, Youtube } from "lucide-react"
 
 export function Footer() {

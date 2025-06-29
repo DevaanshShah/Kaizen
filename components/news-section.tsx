@@ -1,5 +1,3 @@
-"use client"
-
 import { Clock } from "lucide-react"
 
 export function NewsSection() {
