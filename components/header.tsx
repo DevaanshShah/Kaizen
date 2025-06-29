@@ -21,7 +21,7 @@ export function Header() {
             <span className="text-xs bg-purple-600 px-2 py-1 rounded-full text-white">AI</span>
           </motion.div>
           <nav className="hidden md:flex space-x-6">
-            {["Markets", "Indian Stocks", "Technology", "Analysis", "News"].map((item, index) => (
+            {["Indian Stocks", "Technology", "News"].map((item, index) => (
               <motion.button
                 key={item}
                 initial={{ opacity: 0, y: -20 }}
