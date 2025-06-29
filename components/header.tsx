@@ -22,17 +22,20 @@ export function Header() {
           </motion.div>
           <nav className="hidden md:flex space-x-6">
             {["Markets", "Indian Stocks", "Technology", "Analysis", "News"].map((item, index) => (
-              <motion.a
+              <motion.button
                 key={item}
-                href={`#${item.toLowerCase().replace(" ", "-")}`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 + 0.3 }}
                 whileHover={{ color: "#a855f7" }}
                 className="text-gray-300 hover:text-purple-400 transition-colors"
+                onClick={() => {
+                  const element = document.getElementById(item.toLowerCase().replace(" ", "-"))
+                  element?.scrollIntoView({ behavior: "smooth" })
+                }}
               >
                 {item}
-              </motion.a>
+              </motion.button>
             ))}
           </nav>
         </div>

@@ -73,6 +73,13 @@ export function AIMarketChat() {
     }
   }
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
   const quickQuestions = [
     "What's the market outlook?",
     "Analyze AAPL stock",
@@ -159,7 +166,7 @@ export function AIMarketChat() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            onKeyPress={handleKeyPress}
             placeholder="Ask about markets..."
             className="flex-1 bg-gray-800 border-gray-700 text-white text-sm focus:border-purple-500"
             disabled={isLoading}
