@@ -25,6 +25,7 @@ class OpenBBNewsClient {
   private baseUrl: string
   private apiKey?: string
   private isAvailable: boolean = false
+  private connectionChecked: boolean = false
 
   constructor(baseUrl = 'http://localhost:8000', apiKey?: string) {
     this.baseUrl = baseUrl
@@ -32,11 +33,6 @@ class OpenBBNewsClient {
   }
 
   private async makeRequest(endpoint: string, params: Record<string, any> = {}): Promise<any> {
-    // Check if OpenBB is available first
-    if (!this.isAvailable) {
-      throw new Error('OpenBB API is not available. Please start the OpenBB API server.')
-    }
-
     const url = new URL(`${this.baseUrl}${endpoint}`)
     
     // Add parameters to URL
@@ -58,24 +54,28 @@ class OpenBBNewsClient {
       const response = await fetch(url.toString(), {
         method: 'GET',
         headers,
-        signal: AbortSignal.timeout(10000), // 10 second timeout
+        signal: AbortSignal.timeout(5000), // Reduced timeout to 5 seconds
       })
 
       if (!response.ok) {
         throw new Error(`OpenBB API error: ${response.status} ${response.statusText}`)
       }
 
+      // Mark as available on successful request
+      this.isAvailable = true
       return await response.json()
     } catch (error) {
+      // Mark as unavailable on any error
+      this.isAvailable = false
+      
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           throw new Error('OpenBB API request timed out')
         }
         if (error.message.includes('fetch failed') || error.message.includes('Failed to fetch')) {
-          throw new Error('OpenBB API server is not accessible. Please ensure it is running.')
+          throw new Error('OpenBB API server is not accessible')
         }
       }
-      console.error('OpenBB API request failed:', error)
       throw error
     }
   }
@@ -89,8 +89,18 @@ class OpenBBNewsClient {
     sentiment?: 'positive' | 'neutral' | 'negative'
   } = {}): Promise<OpenBBNewsResponse> {
     try {
-      // Use polygon as the preferred provider since we have the API key
-      const provider = params.provider || 'fmp' // Use fmp for world news as polygon focuses on company news
+      // Check connection first if not already checked
+      if (!this.connectionChecked) {
+        await this.checkConnection()
+        this.connectionChecked = true
+      }
+
+      // If not available, return empty results immediately
+      if (!this.isAvailable) {
+        return { results: [] }
+      }
+
+      const provider = params.provider || 'fmp'
       
       return await this.makeRequest('/news/world', {
         limit: params.limit || 20,
@@ -99,7 +109,6 @@ class OpenBBNewsClient {
       })
     } catch (error) {
       console.warn('Failed to fetch world news from OpenBB:', error)
-      // Return empty results instead of throwing
       return { results: [] }
     }
   }
@@ -112,7 +121,17 @@ class OpenBBNewsClient {
     provider?: 'benzinga' | 'fmp' | 'intrinio' | 'polygon' | 'tiingo' | 'yfinance'
   } = {}): Promise<OpenBBNewsResponse> {
     try {
-      // Use polygon as the preferred provider for company news since we have the API key
+      // Check connection first if not already checked
+      if (!this.connectionChecked) {
+        await this.checkConnection()
+        this.connectionChecked = true
+      }
+
+      // If not available, return empty results immediately
+      if (!this.isAvailable) {
+        return { results: [] }
+      }
+
       const provider = params.provider || 'polygon'
       
       return await this.makeRequest('/news/company', {
@@ -122,19 +141,23 @@ class OpenBBNewsClient {
       })
     } catch (error) {
       console.warn('Failed to fetch company news from OpenBB:', error)
-      // Return empty results instead of throwing
       return { results: [] }
     }
   }
 
   async getMarketNews(symbols: string[] = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']): Promise<NewsArticle[]> {
     try {
+      // Check connection first if not already checked
+      if (!this.connectionChecked) {
+        await this.checkConnection()
+        this.connectionChecked = true
+      }
+
+      // If not available, return empty results immediately
       if (!this.isAvailable) {
-        console.warn('OpenBB API not available, returning empty market news')
         return []
       }
 
-      // Use polygon for company news since we have the API key
       const promises = symbols.map(symbol => 
         this.getCompanyNews({ symbol, limit: 5, provider: 'polygon' })
       )
@@ -164,7 +187,7 @@ class OpenBBNewsClient {
   async checkConnection(): Promise<boolean> {
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 3000) // Reduced timeout to 3 seconds
       
       const response = await fetch(`${this.baseUrl}/health`, {
         signal: controller.signal,
@@ -173,17 +196,25 @@ class OpenBBNewsClient {
       
       clearTimeout(timeoutId)
       this.isAvailable = response.ok
+      this.connectionChecked = true
+      
+      if (this.isAvailable) {
+        console.log('OpenBB API connection successful')
+      } else {
+        console.warn('OpenBB API health check failed - using fallback data')
+      }
+      
       return response.ok
     } catch (error) {
-      console.warn('OpenBB API health check failed:', error)
+      console.warn('OpenBB API not available - using fallback data:', error)
       this.isAvailable = false
+      this.connectionChecked = true
       return false
     }
   }
 
   getProviderStatus(): Record<string, boolean> {
     if (!this.isAvailable) {
-      // Return all providers as unavailable if OpenBB is not connected
       return {
         fmp: false,
         polygon: false,
@@ -200,6 +231,12 @@ class OpenBBNewsClient {
 
   isOpenBBAvailable(): boolean {
     return this.isAvailable
+  }
+
+  // Reset connection status to force recheck
+  resetConnection(): void {
+    this.isAvailable = false
+    this.connectionChecked = false
   }
 }
 
