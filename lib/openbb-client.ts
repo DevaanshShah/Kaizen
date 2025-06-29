@@ -1,4 +1,6 @@
 // OpenBB News API Client
+import { openbbSetup } from './openbb-setup'
+
 interface NewsArticle {
   date: string
   title: string
@@ -71,9 +73,12 @@ class OpenBBNewsClient {
     topics?: string
     sentiment?: 'positive' | 'neutral' | 'negative'
   } = {}): Promise<OpenBBNewsResponse> {
+    // Use the best available provider
+    const provider = params.provider || openbbSetup.getBestProvider()
+    
     return this.makeRequest('/news/world', {
       limit: params.limit || 20,
-      provider: params.provider || 'fmp',
+      provider,
       ...params
     })
   }
@@ -85,17 +90,21 @@ class OpenBBNewsClient {
     end_date?: string
     provider?: 'benzinga' | 'fmp' | 'intrinio' | 'polygon' | 'tiingo' | 'yfinance'
   } = {}): Promise<OpenBBNewsResponse> {
+    // Use the best available provider
+    const provider = params.provider || openbbSetup.getBestProvider()
+    
     return this.makeRequest('/news/company', {
       limit: params.limit || 20,
-      provider: params.provider || 'fmp',
+      provider,
       ...params
     })
   }
 
   async getMarketNews(symbols: string[] = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']): Promise<NewsArticle[]> {
     try {
+      const provider = openbbSetup.getBestProvider()
       const promises = symbols.map(symbol => 
-        this.getCompanyNews({ symbol, limit: 5, provider: 'fmp' })
+        this.getCompanyNews({ symbol, limit: 5, provider: provider as any })
       )
       
       const responses = await Promise.allSettled(promises)
@@ -119,7 +128,24 @@ class OpenBBNewsClient {
       return []
     }
   }
+
+  async checkConnection(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/health`)
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+
+  getProviderStatus(): Record<string, boolean> {
+    return openbbSetup.getCredentialStatus()
+  }
 }
 
-export const openbbClient = new OpenBBNewsClient()
+export const openbbClient = new OpenBBNewsClient(
+  process.env.OPENBB_API_URL || 'http://localhost:8000',
+  process.env.OPENBB_API_KEY
+)
+
 export type { NewsArticle, OpenBBNewsResponse }
