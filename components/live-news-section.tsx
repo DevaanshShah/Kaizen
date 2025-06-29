@@ -8,7 +8,6 @@ import { Clock, User, Brain, Sparkles, TrendingUp, TrendingDown, RefreshCw, Sear
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { newsService } from "@/lib/news-service"
 import type { NewsArticle } from "@/lib/openbb-client"
 
 interface LiveNewsSectionProps {
@@ -39,9 +38,20 @@ export function LiveNewsSection({
   const fetchNews = async (forceRefresh = false) => {
     setIsLoading(true)
     try {
+      const refreshParam = forceRefresh ? '&refresh=true' : ''
+      
+      const [worldResponse, marketResponse] = await Promise.all([
+        fetch(`/api/news?type=world&limit=${maxArticles}${refreshParam}`),
+        fetch(`/api/news?type=market&limit=${maxArticles}${refreshParam}`)
+      ])
+      
+      if (!worldResponse.ok || !marketResponse.ok) {
+        throw new Error('Failed to fetch news data')
+      }
+      
       const [worldNews, marketNews] = await Promise.all([
-        newsService.getWorldNews(forceRefresh),
-        newsService.getMarketNews(forceRefresh)
+        worldResponse.json(),
+        marketResponse.json()
       ])
       
       // Combine and deduplicate articles
