@@ -4,6 +4,7 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { HeroSection } from "@/components/hero-section"
 import { MarketsSection } from "@/components/markets-section"
+import { IndianStocksSection } from "@/components/indian-stocks-section"
 import { NewsSection } from "@/components/news-section"
 import { Footer } from "@/components/footer"
 
@@ -16,6 +17,7 @@ export default function HomePage() {
         <main className="flex-1 ml-80">
           <HeroSection />
           <MarketsSection />
+          <IndianStocksSection />
           <NewsSection />
           <Footer />
         </main>

@@ -21,10 +21,10 @@ export function Header() {
             <span className="text-xs bg-purple-600 px-2 py-1 rounded-full text-white">AI</span>
           </motion.div>
           <nav className="hidden md:flex space-x-6">
-            {["Markets", "Technology", "Analysis", "News"].map((item, index) => (
+            {["Markets", "Indian Stocks", "Technology", "Analysis", "News"].map((item, index) => (
               <motion.a
                 key={item}
-                href={`#${item.toLowerCase()}`}
+                href={`#${item.toLowerCase().replace(" ", "-")}`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 + 0.3 }}
