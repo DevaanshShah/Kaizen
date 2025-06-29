@@ -54,8 +54,12 @@ export function LiveNewsSection({
         marketResponse.json()
       ])
       
+      // Extract articles from response objects
+      const worldArticles = Array.isArray(worldNews) ? worldNews : (worldNews.articles || [])
+      const marketArticles = Array.isArray(marketNews) ? marketNews : (marketNews.articles || [])
+      
       // Combine and deduplicate articles
-      const combined = [...worldNews, ...marketNews]
+      const combined = [...worldArticles, ...marketArticles]
       const unique = combined.filter((article, index, self) => 
         index === self.findIndex(a => a.title === article.title)
       )
@@ -69,6 +73,8 @@ export function LiveNewsSection({
       setLastUpdated(new Date())
     } catch (error) {
       console.error('Failed to fetch news:', error)
+      // Set empty array on error to prevent further issues
+      setArticles([])
     } finally {
       setIsLoading(false)
     }
