@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, Suspense } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Sphere, Stars } from "@react-three/drei"
 import type * as THREE from "three"
@@ -53,18 +53,27 @@ function FloatingPoints() {
   )
 }
 
+function GlobeContent() {
+  return (
+    <>
+      <ambientLight intensity={0.2} />
+      <pointLight position={[10, 10, 10]} intensity={0.5} />
+      <pointLight position={[-10, -10, -10]} intensity={0.3} color="#60a5fa" />
+      <Stars radius={50} depth={50} count={1000} factor={2} saturation={0} fade />
+      <RotatingGlobe />
+      <FloatingPoints />
+    </>
+  )
+}
+
 export function Globe3D() {
   return (
     <div className="w-full h-full">
-      <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-        <ambientLight intensity={0.2} />
-        <pointLight position={[10, 10, 10]} intensity={0.5} />
-        <pointLight position={[-10, -10, -10]} intensity={0.3} color="#60a5fa" />
-
-        <Stars radius={50} depth={50} count={1000} factor={2} saturation={0} fade />
-        <RotatingGlobe />
-        <FloatingPoints />
-      </Canvas>
+      <Suspense fallback={<div className="w-full h-full bg-gray-900 animate-pulse rounded-lg" />}>
+        <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
+          <GlobeContent />
+        </Canvas>
+      </Suspense>
     </div>
   )
 }

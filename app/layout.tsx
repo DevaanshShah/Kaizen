@@ -8,7 +8,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Kaizen - Advanced Financial Intelligence",
   description: "The definitive source for AI-powered financial analysis and market intelligence.",
-  generator: 'Next.js'
 }
 
 export default function RootLayout({
